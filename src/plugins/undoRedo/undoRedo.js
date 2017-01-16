@@ -312,6 +312,7 @@ Handsontable.UndoRedo.RemoveRowAction = function(index, data) {
 inherit(Handsontable.UndoRedo.RemoveRowAction, Handsontable.UndoRedo.Action);
 
 Handsontable.UndoRedo.RemoveRowAction.prototype.undo = function(instance, undoneCallback) {
+  instance.addHookOnce('afterRender', undoneCallback);
   instance.alter('insert_row', this.index, this.data.length, 'undo');
 
   var source = instance.getSourceData();
@@ -320,7 +321,6 @@ Handsontable.UndoRedo.RemoveRowAction.prototype.undo = function(instance, undone
   }
 
   instance.render();
-  instance.addHookOnce('afterRender', undoneCallback);
 };
 Handsontable.UndoRedo.RemoveRowAction.prototype.redo = function(instance, redoneCallback) {
   instance.addHookOnce('afterRemoveRow', redoneCallback);
