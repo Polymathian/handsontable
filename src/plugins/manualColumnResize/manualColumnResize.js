@@ -470,10 +470,15 @@ class ManualColumnResize extends BasePlugin {
    */
   onModifyColWidth(width, column) {
     if (this.enabled) {
+      let autoColSizePlugin = this.hot.getPlugin('autoColumnSize');
+      let autoColWidthResult = autoColSizePlugin ? autoColSizePlugin.widths[column] : null;
+
       column = this.hot.runHooks('modifyCol', column);
 
-      if (this.hot.getSettings().manualColumnResize && this.manualColumnWidths[column]) {
-        return this.manualColumnWidths[column];
+      let manualColWidth = this.manualColumnWidths[column];
+
+      if (manualColWidth !== void 0 && (manualColWidth === autoColWidthResult || manualColWidth > (width || 0))) {
+        return manualColWidth;
       }
     }
 
