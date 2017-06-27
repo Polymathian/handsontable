@@ -247,6 +247,9 @@ DefaultSettings.prototype = {
    * Any constructor or column option may be overwritten for a particular cell (row/column combination)
    * using the `cells` property in the Handsontable constructor.
    *
+   * __Note:__ Parameters `row` and `col` always represent __physical indexes__. Example below show how to execute
+   * operations based on the __visual__ representation of Handsontable.
+   *
    * @type {Function}
    * @default undefined
    * @example
@@ -254,8 +257,10 @@ DefaultSettings.prototype = {
    * ...
    * cells: function (row, col, prop) {
    *   var cellProperties = {};
+   *   var visualRowIndex = this.instance.toVisualRow(row);
+   *   var visualColIndex = this.instance.toVisualColumn(col);
    *
-   *   if (row === 0 && col === 0) {
+   *   if (visualRowIndex === 0 && visualColIndex === 0) {
    *     cellProperties.readOnly = true;
    *   }
    *
@@ -366,7 +371,7 @@ DefaultSettings.prototype = {
   maxRows: Infinity,
 
   /**
-   * Maximum number of cols.
+   * Maximum number of cols. If set to a value lower than the initial col count, the data will be trimmed to the provided value as the number of cols.
    *
    * @type {Number}
    * @default Infinity
@@ -823,8 +828,13 @@ DefaultSettings.prototype = {
    * If a string is provided, it may be one of the following predefined values:
    * * `autocomplete`,
    * * `checkbox`,
-   * * `text`,
-   * * `numeric`.
+   * * `html`,
+   * * `numeric`,
+   * * `password`.
+   * * `text`.
+   *
+   * Or you can [register](http://docs.handsontable.com/demo-custom-renderers.html) the custom renderer under specified name and use
+   * its name as an alias in your configuration.
    *
    * If a function is provided, it will receive the following arguments:
    * ```js
@@ -836,10 +846,17 @@ DefaultSettings.prototype = {
    * @example
    * ```js
    * ...
+   * Handsontable.renderers.registerRenderer('my.renderer', function(instance, TD, row, col, prop, value, cellProperties) {
+   *   TD.innerHTML = value;
+   * });
+   * ...
    * columns: [
    *   {
    *     editor: 'select',
    *     renderer: 'autocomplete' // as string
+   *   },
+   *   {
+   *     renderer: 'my.renderer' // custom renderer as an alias
    *   },
    *   {
    *     // renderer as custom function
@@ -903,23 +920,41 @@ DefaultSettings.prototype = {
 
   /**
    * @description
-   * Shortcut to define the combination of the cell renderer and editor for the column.
+   * Shortcut to define the combination of the cell renderer, editor and validator for the column, cell or whole table.
    *
    * Possible values:
-   *  * text
-   *  * [numeric](http://docs.handsontable.com/demo-numeric.html)
-   *  * [date](http://docs.handsontable.com/demo-date.html)
-   *  * [checkbox](http://docs.handsontable.com/demo-checkbox.html)
    *  * [autocomplete](http://docs.handsontable.com/demo-autocomplete.html)
+   *  * [checkbox](http://docs.handsontable.com/demo-checkbox.html)
+   *  * [date](http://docs.handsontable.com/demo-date.html)
    *  * [dropdown](http://docs.handsontable.com/demo-dropdown.html)
    *  * [handsontable](http://docs.handsontable.com/demo-handsontable.html)
+   *  * [numeric](http://docs.handsontable.com/demo-numeric.html)
+   *  * [password](http://docs.handsontable.com/demo-password.html)
+   *  * text
+   *  * [time](http://docs.handsontable.com/demo-time.html)
+   *
+   * Or you can register the custom cell type under specified name and use
+   * its name as an alias in your configuration.
    *
    * @example
    * ```js
    * ...
+   * Handsontable.cellTypes.registerCellType('my.type', {
+   *   editor: MyEditorClass,
+   *   renderer: function(hot, td, row, col, prop, value, cellProperties) {
+   *     td.innerHTML = value;
+   *   },
+   *   validator: function(value, callback) {
+   *     callback(value === 'foo' ? true : false);
+   *   }
+   * });
+   * ...
    * columns: [
    *   {
    *     type: 'text'
+   *   },
+   *   {
+   *     type: 'my.type' // an alias to custom type
    *   },
    *   {
    *     type: 'checkbox'
@@ -959,7 +994,10 @@ DefaultSettings.prototype = {
    *  * [select](http://docs.handsontable.com/demo-select.html)
    *  * text
    *
-   * Or you can disable cell editing passing `false`.
+   * Or you can [register](http://docs.handsontable.com/tutorial-cell-editor.html#registering-an-editor) the custom editor under specified name and use
+   * its name as an alias in your configuration.
+   *
+   * To disable cell editing completely set `editor` property to `false`.
    *
    * @example
    * ```js
@@ -1261,10 +1299,19 @@ DefaultSettings.prototype = {
   viewportColumnRenderingOffset: 'auto',
 
   /**
-   * A function or a regular expression, which will be used in the process of cell validation.
+   * A function, regular expression or a string, which will be used in the process of cell validation.
    * If a function is used, be sure to execute the callback argument with either `true` (`callback(true)`) if the validation passed
    * or with `false` (`callback(false)`), if the validation failed.
    * Note, that `this` in the function points to the `cellProperties` object.
+   *
+   * If a string is provided, it may be one of the following predefined values:
+   * * `autocomplete`,
+   * * `date`,
+   * * `numeric`,
+   * * `time`.
+   *
+   * Or you can [register](http://docs.handsontable.com/demo-data-validation.html) the validator function under specified name and use
+   * its name as an alias in your configuration.
    *
    * See more [in the demo](http://docs.handsontable.com/demo-data-validation.html).
    *
@@ -1283,8 +1330,14 @@ DefaultSettings.prototype = {
    *      validator: /^[0-9]$/ // regular expression
    *    }
    * ]
+   * // as a string
+   * columns: [
+   *    {
+   *      validator: 'numeric'
+   *    }
+   * ]
    * ```
-   * @type {Function|RegExp}
+   * @type {Function|RegExp|String}
    * @default undefined
    * @since 0.9.5
    */
@@ -1563,8 +1616,8 @@ DefaultSettings.prototype = {
   autoColumnSize: void 0,
 
   /**
-   * Enables or disables autoRowSize plugin. Default value is `undefined`, which has the same effect as `true`.
-   * Disabling this plugin can increase performance, as no size-related calculations would be performed.
+   * Enables or disables autoRowSize plugin. Default value is `undefined`, which has the same effect as `false` (disabled).
+   * Enabling this plugin can decrease performance, as size-related calculations would be performed.
    *
    * Row height calculations are divided into sync and async stages. Each of these stages has their own advantages and
    * disadvantages. Synchronous calculations are faster but they block the browser UI, while the slower asynchronous operations don't

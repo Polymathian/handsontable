@@ -2,7 +2,6 @@ import {KEY_CODES} from './../helpers/unicode';
 import {extend} from './../helpers/object';
 import {setCaretPosition} from './../helpers/dom/element';
 import {stopImmediatePropagation, isImmediatePropagationStopped} from './../helpers/dom/event';
-import {getEditor, registerEditor} from './../editors';
 import TextEditor from './textEditor';
 
 const HandsontableEditor = TextEditor.prototype.extend();
@@ -25,7 +24,6 @@ HandsontableEditor.prototype.createElements = function() {
 };
 
 HandsontableEditor.prototype.prepare = function(td, row, col, prop, value, cellProperties) {
-
   TextEditor.prototype.prepare.apply(this, arguments);
 
   var parent = this;
@@ -40,8 +38,8 @@ HandsontableEditor.prototype.prepare = function(td, row, col, prop, value, cellP
     autoRowSize: false,
     readOnly: true,
     fillHandle: false,
-    afterOnCellMouseDown() {
-      var value = this.getValue();
+    afterOnCellMouseDown(_, coords) {
+      var value = this.getSourceData(coords.row, coords.col);
 
       // if the value is undefined then it means we don't want to set the value
       if (value !== void 0) {
@@ -112,7 +110,6 @@ var onBeforeKeyDown = function(event) {
 };
 
 HandsontableEditor.prototype.open = function() {
-
   this.instance.addHook('beforeKeyDown', onBeforeKeyDown);
 
   TextEditor.prototype.open.apply(this, arguments);
@@ -180,7 +177,5 @@ HandsontableEditor.prototype.assignHooks = function() {
     }
   });
 };
-
-registerEditor('handsontable', HandsontableEditor);
 
 export default HandsontableEditor;

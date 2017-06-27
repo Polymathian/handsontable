@@ -31,7 +31,7 @@ describe('Core_copy', () => {
     keyDownUp('ctrl');
 
     // should prepare 2 rows for copying
-    expect($('textarea.copyPaste').val()).toEqual('\tKia\tNissan\tToyota\tHonda\n2008\t10\t11\t12\t13\n');
+    expect($('textarea.copyPaste').val()).toEqual('\tKia\tNissan\tToyota\tHonda\n2008\t10\t11\t12\t13');
   });
 
   it('should set copyable text until copyColsLimit is reached', () => {
@@ -44,7 +44,7 @@ describe('Core_copy', () => {
     keyDownUp('ctrl');
 
     // should prepare 2 columns for copying
-    expect($('textarea.copyPaste').val()).toEqual('\tKia\n2008\t10\n2009\t20\n2010\t30\n');
+    expect($('textarea.copyPaste').val()).toEqual('\tKia\n2008\t10\n2009\t20\n2010\t30');
   });
 
   it('should call onCopyLimit callback when copy limit was reached', () => {
@@ -64,7 +64,7 @@ describe('Core_copy', () => {
     expect(result).toEqual([4, 5, 2, 2]);
   });
 
-  it('ctrl+x should cut selected data', (done) => {
+  it('ctrl+x should cut selected data', async () => {
     var hot = handsontable({
       data: arrayOfArrays()
     });
@@ -72,33 +72,31 @@ describe('Core_copy', () => {
     selectCell(0, 0, countRows() - 1, countCols() - 1); // selectAll
     keyDownUp('ctrl+x');
 
-    setTimeout(() => {
-      expect(hot.getDataAtCell(0, 0)).toEqual('');
-      expect(hot.getDataAtCell(1, 1)).toEqual('');
-      expect(hot.getDataAtCell(2, 2)).toEqual('');
-      done();
-    }, 300);
+    await sleep(300);
+
+    expect(hot.getDataAtCell(0, 0)).toEqual('');
+    expect(hot.getDataAtCell(1, 1)).toEqual('');
+    expect(hot.getDataAtCell(2, 2)).toEqual('');
   });
 
-  it('ctrl+v should paste copied data to selected range', (done) => {
-    var hot = handsontable({
+  it('ctrl+v should paste copied data to selected range', async () => {
+    const hot = handsontable({
       data: arrayOfArrays()
     });
-    $('textarea.copyPaste').val('\tKia\tNissan\tToyota\tHonda\n2008\t10\t11\t12\t13\n');
+    $('textarea.copyPaste').val('\tKia\tNissan\tToyota\tHonda\n2008\t10\t11\t12\t13');
 
     selectCell(0, 0, countRows() - 1, countCols() - 1); // selectAll
     keyDownUp('ctrl+v');
 
-    setTimeout(() => {
-      expect(hot.getDataAtCell(0, 0)).toEqual('');
-      expect(hot.getDataAtCell(0, 1)).toEqual('Kia');
-      expect(hot.getDataAtCell(0, 2)).toEqual('Nissan');
-      expect(hot.getDataAtCell(0, 3)).toEqual('Toyota');
-      expect(hot.getDataAtCell(1, 0)).toEqual('2008');
-      expect(hot.getDataAtCell(1, 1)).toEqual('10');
-      expect(hot.getDataAtCell(1, 2)).toEqual('11');
-      expect(hot.getDataAtCell(1, 3)).toEqual('12');
-      done();
-    }, 200);
+    await sleep(200);
+
+    expect(hot.getDataAtCell(0, 0)).toEqual('');
+    expect(hot.getDataAtCell(0, 1)).toEqual('Kia');
+    expect(hot.getDataAtCell(0, 2)).toEqual('Nissan');
+    expect(hot.getDataAtCell(0, 3)).toEqual('Toyota');
+    expect(hot.getDataAtCell(1, 0)).toEqual('2008');
+    expect(hot.getDataAtCell(1, 1)).toEqual('10');
+    expect(hot.getDataAtCell(1, 2)).toEqual('11');
+    expect(hot.getDataAtCell(1, 3)).toEqual('12');
   });
 });

@@ -1,6 +1,7 @@
 'use strict';
 
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
+var ProgressBarPlugin = require('progress-bar-webpack-plugin');
 var path = require('path');
 var fs = require('fs');
 var webpack = require('webpack');
@@ -19,6 +20,7 @@ module.exports.BUILD_DATE = BUILD_DATE;
 module.exports.BASE_VERSION = BASE_VERSION;
 
 licenseBody += '\nVersion: ' + PACKAGE_VERSION;
+licenseBody += '\nDate: ' + BUILD_DATE;
 
 module.exports.create = function create(envArgs) {
   var config = {
@@ -62,6 +64,10 @@ module.exports.create = function create(envArgs) {
       ]
     },
     plugins: [
+      new ProgressBarPlugin({
+        format: '  build [:bar] \u001b[32m:percent\u001b[0m (:elapsed seconds)',
+        summary: false,
+      }),
       // This helps ensure the builds are consistent if source code hasn't changed
       new webpack.optimize.OccurrenceOrderPlugin(),
       new webpack.BannerPlugin(licenseBody),
@@ -73,6 +79,12 @@ module.exports.create = function create(envArgs) {
         '__ENV_ARGS__': JSON.stringify(envArgs),
       }),
     ],
+    node: {
+      global: false,
+      process: false,
+      Buffer: false,
+      setImmediate: false,
+    },
   };
 
   return [config];

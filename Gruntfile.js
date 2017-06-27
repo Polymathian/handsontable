@@ -1,7 +1,7 @@
  /**
  * This file is used to test only Handsontable End-to-End tests.
  */
-var JasmineConsoleReporter = require('jasmine-console-reporter');
+var JasmineReporter = require('jasmine-terminal-reporter');
 
 module.exports = function(grunt) {
   grunt.initConfig({});
@@ -19,20 +19,21 @@ module.exports = function(grunt) {
 
   function spawnPhantomJS(url, done) {
     var phantomjs = require('grunt-lib-phantomjs').init(grunt);
-    var reporter = new JasmineConsoleReporter({
+    var reporter = new JasmineReporter({
       colors: 1,
       cleanStack: 1,
       verbosity: 4,
       listStyle: 'flat',
       activity: true,
     });
+    var errorCount = 0;
 
     // jasmine-reporter handlers.
     phantomjs.on('jasmine.jasmineStarted', function(msg) {
       reporter.jasmineStarted.apply(reporter, arguments);
     });
     phantomjs.on('jasmine.specStarted', function(msg) {
-      reporter.specStarted.apply(reporter, arguments);
+      reporter.specStarted && reporter.specStarted.apply(reporter, arguments);
     });
     phantomjs.on('jasmine.suiteStarted', function(msg) {
       reporter.suiteStarted.apply(reporter, arguments);
@@ -45,6 +46,9 @@ module.exports = function(grunt) {
       reporter.suiteDone.apply(reporter, arguments);
     });
     phantomjs.on('jasmine.specDone', function(msg) {
+      if (msg.failedExpectations.length) {
+        errorCount += msg.failedExpectations.length;
+      }
       reporter.specDone.apply(reporter, arguments);
     });
 
@@ -71,7 +75,7 @@ module.exports = function(grunt) {
         },
       },
       done: function(err) {
-        done(err);
+        done(err || errorCount === 0);
       }
     });
   }
