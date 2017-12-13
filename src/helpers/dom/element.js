@@ -634,16 +634,24 @@ export function getScrollableElement(element) {
  * @returns {HTMLElement} Base element's trimming parent
  */
 export function getTrimmingContainer(base) {
-  var el = base.parentNode;
+  var el = base.parentNode,
+  whitelist = ['visible', ''];
 
   while (el && el.style && document.body !== el) {
-    if (el.style.overflow !== 'visible' && el.style.overflow !== '') {
+    var overflow = el.style.overflow;
+    var overflowX = el.style.overflowX;
+    var overflowY = el.style.overflowY;
+
+    if (whitelist.indexOf(overflow) === -1 || whitelist.indexOf(overflowX) === -1 || whitelist.indexOf(overflowY) === -1) {
       return el;
 
     } else if (window.getComputedStyle) {
       var computedStyle = window.getComputedStyle(el);
+      var computedOverflow = computedStyle.getPropertyValue('overflow');
+      var computedOverflowX = computedStyle.getPropertyValue('overflow-x');
+      var computedOverflowY = computedStyle.getPropertyValue('overflow-y');
 
-      if (computedStyle.getPropertyValue('overflow') !== 'visible' && computedStyle.getPropertyValue('overflow') !== '') {
+      if (whitelist.indexOf(computedOverflow) === -1 || whitelist.indexOf(computedOverflowX) === -1 || whitelist.indexOf(computedOverflowY) === -1) {
         return el;
       }
     }

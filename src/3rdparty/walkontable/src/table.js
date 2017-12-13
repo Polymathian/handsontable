@@ -174,10 +174,11 @@ class Table {
           this.holder.style.overflow = 'visible';
           this.wtRootElement.style.overflow = 'visible';
         }
-      } else {
-        this.holder.style.width = getStyle(trimmingElement, 'width');
-        this.holder.style.height = getStyle(trimmingElement, 'height');
-        this.holder.style.overflow = '';
+      // POLYMATHIAN - Removed this code because it was causing issues with scrollable regions
+      //} else {		
+        //this.holder.style.width = getStyle(trimmingElement, 'width');		
+        //this.holder.style.height = getStyle(trimmingElement, 'height');		
+        //this.holder.style.overflow = '';
       }
     }
   }
