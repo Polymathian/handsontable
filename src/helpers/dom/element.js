@@ -502,8 +502,13 @@ export function offset(elem) {
     if (elem === document.body) {
       break;
     }
+
     offsetLeft += elem.offsetLeft;
+    // offsetLeft -= elem.scrollLeft;
+
     offsetTop += elem.offsetTop;
+    // offsetTop -= elem.scrollTop;
+
     lastElem = elem;
   }
 
