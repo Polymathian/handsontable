@@ -64,7 +64,6 @@ class TopOverlay extends Overlay {
 
       if (top < viewTop && (bottom - overlayRoot.offsetHeight - viewTop) > 0) {
         finalTop = viewTop - top;
-        // TODO - check for the bottom condition
       } else {
         finalTop = 0;
       }
