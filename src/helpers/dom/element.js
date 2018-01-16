@@ -635,7 +635,7 @@ export function getScrollableElement(element) {
  */
 export function getTrimmingContainer(base) {
   var el = base.parentNode,
-  whitelist = ['visible', ''];
+    whitelist = ['visible', ''];
 
   while (el && el.style && document.body !== el) {
     var overflow = el.style.overflow;
@@ -1004,4 +1004,8 @@ export function isInput(element) {
  */
 export function isOutsideInput(element) {
   return isInput(element) && element.className.indexOf('handsontableInput') == -1 && element.className.indexOf('copyPaste') == -1;
+}
+
+export function isElementHolder(element) {
+  return element.className && element.className.indexOf('wtHolder') !== -1;
 }

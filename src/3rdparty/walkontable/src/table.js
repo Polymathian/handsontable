@@ -7,7 +7,9 @@ import {
     removeClass,
     removeTextNodes,
     overlayContainsElement,
-    closest
+    closest,
+    isElementHolder,
+    getScrollableElement
 } from './../../../helpers/dom/element';
 import {isFunction} from './../../../helpers/function';
 import CellCoords from './cell/coords';
@@ -163,11 +165,13 @@ class Table {
 
   alignOverlaysWithTrimmingContainer() {
     const trimmingElement = getTrimmingContainer(this.wtRootElement);
+    const scrollingElement = getScrollableElement(this.wtRootElement);
 
     if (!this.isWorkingOnClone()) {
       this.holder.parentNode.style.position = 'relative';
 
-      if (trimmingElement === window) {
+      // This check was if the trimmingElement was window, it should be: if the trimmingElement is scrollable
+      if (trimmingElement === scrollingElement) {
         let preventOverflow = this.wot.getSetting('preventOverflow');
 
         if (!preventOverflow) {
@@ -175,10 +179,10 @@ class Table {
           this.wtRootElement.style.overflow = 'visible';
         }
       // POLYMATHIAN - Removed this code because it was causing issues with scrollable regions
-      //} else {		
-        //this.holder.style.width = getStyle(trimmingElement, 'width');		
-        //this.holder.style.height = getStyle(trimmingElement, 'height');		
-        //this.holder.style.overflow = '';
+      } else {
+        this.holder.style.width = getStyle(trimmingElement, 'width');
+        this.holder.style.height = getStyle(trimmingElement, 'height');
+        this.holder.style.overflow = '';
       }
     }
   }

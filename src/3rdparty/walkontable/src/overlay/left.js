@@ -8,7 +8,8 @@ import {
   innerHeight,
   removeClass,
   setOverlayPosition,
-  resetCssTransform
+  resetCssTransform,
+  isElementHolder
 } from './../../../../helpers/dom/element';
 import Overlay from './_base';
 
@@ -45,7 +46,7 @@ class LeftOverlay extends Overlay {
     let headerPosition = 0;
     let preventOverflow = this.wot.getSetting('preventOverflow');
 
-    if (this.trimmingContainer === window && (!preventOverflow || preventOverflow !== 'horizontal')) {
+    if (this.trimmingContainer === this.mainTableScrollableElement && (!preventOverflow || preventOverflow !== 'horizontal')) {
       let box = this.wot.wtTable.hider.getBoundingClientRect();
       let left = Math.ceil(box.left);
       let right = Math.ceil(box.right);

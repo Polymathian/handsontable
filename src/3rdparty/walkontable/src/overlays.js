@@ -3,6 +3,7 @@ import {
   getScrollbarWidth,
   getScrollLeft,
   getScrollTop,
+  isElementHolder
 } from './../../../helpers/dom/element';
 import {arrayEach} from './../../../helpers/array';
 import {isKey} from './../../../helpers/unicode';
@@ -438,7 +439,7 @@ class Overlays {
           }
 
           topOverlay.scrollLeft = tempScrollValue;
-          delegatedScroll = (masterHorizontal !== window);
+          delegatedScroll = isElementHolder(masterHorizontal);
         }
 
         if (bottomOverlay && bottomOverlay.scrollLeft !== tempScrollValue) {
@@ -448,7 +449,7 @@ class Overlays {
           }
 
           bottomOverlay.scrollLeft = tempScrollValue;
-          delegatedScroll = (masterHorizontal !== window);
+          delegatedScroll = isElementHolder(masterHorizontal);
         }
       }
 
@@ -467,7 +468,7 @@ class Overlays {
         }
 
         leftOverlay.scrollTop = tempScrollValue;
-        delegatedScroll = (masterVertical !== window);
+        delegatedScroll = isElementHolder(masterVertical);
       }
 
     } else if (target === bottomOverlay) {
@@ -494,7 +495,7 @@ class Overlays {
           }
 
           topOverlay.scrollLeft = tempScrollValue;
-          delegatedScroll = (masterVertical !== window);
+          delegatedScroll = isElementHolder(masterVertical);
         }
 
       }
@@ -537,7 +538,7 @@ class Overlays {
         }
 
         bottomOverlay.scrollLeft = tempScrollValue;
-        delegatedScroll = (masterVertical !== window);
+        delegatedScroll = isElementHolder(masterVertical);
       }
 
     } else if (target === leftOverlay) {

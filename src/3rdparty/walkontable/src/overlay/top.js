@@ -8,7 +8,8 @@ import {
   innerWidth,
   removeClass,
   setOverlayPosition,
-  resetCssTransform
+  resetCssTransform,
+  isElementHolder
 } from './../../../../helpers/dom/element';
 import Overlay from './_base';
 
@@ -45,21 +46,29 @@ class TopOverlay extends Overlay {
     let headerPosition = 0;
     let preventOverflow = this.wot.getSetting('preventOverflow');
 
-    if (this.trimmingContainer === window && (!preventOverflow || preventOverflow !== 'vertical')) {
+    if (this.trimmingContainer === this.mainTableScrollableElement && (!preventOverflow || preventOverflow !== 'vertical')) {
       let box = this.wot.wtTable.hider.getBoundingClientRect();
       let top = Math.ceil(box.top);
       let bottom = Math.ceil(box.bottom);
       let finalLeft;
       let finalTop;
+      let viewTop = 0;
+
+      // If there is an element above the trimming container
+      if (this.trimmingContainer !== window) {
+        viewTop = this.trimmingContainer.offsetTop;
+      }
 
       finalLeft = this.wot.wtTable.hider.style.left;
       finalLeft = finalLeft === '' ? 0 : finalLeft;
 
-      if (top < 0 && (bottom - overlayRoot.offsetHeight) > 0) {
-        finalTop = -top;
+      if (top < viewTop && (bottom - overlayRoot.offsetHeight - viewTop) > 0) {
+        finalTop = viewTop - top;
+        // TODO - check for the bottom condition
       } else {
         finalTop = 0;
       }
+
       headerPosition = finalTop;
       finalTop += 'px';
 
@@ -256,7 +265,7 @@ class TopOverlay extends Overlay {
    * @returns {Number}
    */
   getTableParentOffset() {
-    if (this.mainTableScrollableElement === window) {
+    if (!isElementHolder(this.mainTableScrollableElement)) {
       return this.wot.wtTable.holderOffset.top;
 
     }

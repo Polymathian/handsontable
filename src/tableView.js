@@ -499,7 +499,7 @@ function TableView(instance) {
         calc.endRow = Math.min(calc.endRow + viewportOffset, rows - 1);
       }
       if (viewportOffset === 'auto') {
-        let center = calc.startRow + calc.endRow - calc.startRow;
+        let center = calc.startRow + calc.endRow - calc.startRow;  // TODO obviously wrong
         let offset = Math.ceil(center / rows * 12);
 
         calc.startRow = Math.max(calc.startRow - offset, 0);
