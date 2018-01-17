@@ -24,7 +24,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * Version: 0.32.0
- * Date: Thu Dec 21 2017 09:53:13 GMT+1000 (AEST)
+ * Date: Tue May 30 2017 12:18:32 GMT+0200 (CEST)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -783,23 +783,15 @@ function getScrollableElement(element) {
  * @returns {HTMLElement} Base element's trimming parent
  */
 function getTrimmingContainer(base) {
-  var el = base.parentNode,
-      whitelist = ['visible', ''];
+  var el = base.parentNode;
 
   while (el && el.style && document.body !== el) {
-    var overflow = el.style.overflow;
-    var overflowX = el.style.overflowX;
-    var overflowY = el.style.overflowY;
-
-    if (whitelist.indexOf(overflow) === -1 || whitelist.indexOf(overflowX) === -1 || whitelist.indexOf(overflowY) === -1) {
+    if (el.style.overflow !== 'visible' && el.style.overflow !== '') {
       return el;
     } else if (window.getComputedStyle) {
       var computedStyle = window.getComputedStyle(el);
-      var computedOverflow = computedStyle.getPropertyValue('overflow');
-      var computedOverflowX = computedStyle.getPropertyValue('overflow-x');
-      var computedOverflowY = computedStyle.getPropertyValue('overflow-y');
 
-      if (whitelist.indexOf(computedOverflow) === -1 || whitelist.indexOf(computedOverflowX) === -1 || whitelist.indexOf(computedOverflowY) === -1) {
+      if (computedStyle.getPropertyValue('overflow') !== 'visible' && computedStyle.getPropertyValue('overflow') !== '') {
         return el;
       }
     }
@@ -20956,11 +20948,10 @@ var Table = function () {
             this.holder.style.overflow = 'visible';
             this.wtRootElement.style.overflow = 'visible';
           }
-          // POLYMATHIAN - Removed this code because it was causing issues with scrollable regions
-          //} else {		
-          //this.holder.style.width = getStyle(trimmingElement, 'width');		
-          //this.holder.style.height = getStyle(trimmingElement, 'height');		
-          //this.holder.style.overflow = '';
+        } else {
+          this.holder.style.width = (0, _element.getStyle)(trimmingElement, 'width');
+          this.holder.style.height = (0, _element.getStyle)(trimmingElement, 'height');
+          this.holder.style.overflow = '';
         }
       }
     }
@@ -21124,7 +21115,6 @@ var Table = function () {
      * @returns {HTMLElement|Number} HTMLElement on success or Number one of the exit codes on error:
      *  -1 row before viewport
      *  -2 row after viewport
-     *  -3 no rows rendered
      */
 
   }, {
@@ -21136,8 +21126,6 @@ var Table = function () {
       } else if (this.isRowAfterRenderedRows(coords.row)) {
         // row after rendered rows
         return -2;
-      } else if (this.TBODY.childElementCount === 0) {
-        return -3;
       }
 
       var TR = this.TBODY.childNodes[this.rowFilter.sourceToRendered(coords.row)];
@@ -23370,9 +23358,7 @@ HandsontableEditor.prototype.open = function () {
   if (this.htEditor) {
     this.htEditor.destroy();
   }
-  // Construct and initialise a new Handsontable
-  this.htEditor = new this.instance.constructor(this.htContainer, this.htOptions);
-  this.htEditor.init();
+  this.htEditor = new Handsontable(this.htContainer, this.htOptions);
 
   if (this.cellProperties.strict) {
     this.htEditor.selectCell(0, 0);
@@ -28295,7 +28281,7 @@ var DataSource = function () {
       var result = this.data;
 
       if (toArray) {
-        result = this.getByRange({ row: 0, col: 0 }, { row: Math.max(this.countRows() - 1, 0), col: Math.max(this.hot.countCols() - 1, 0) }, true);
+        result = this.getByRange({ row: 0, col: 0 }, { row: Math.max(this.countRows() - 1, 0), col: Math.max(this.countColumns() - 1, 0) }, true);
       }
 
       return result;
@@ -28422,7 +28408,7 @@ var DataSource = function () {
             var prop = _this2.colToProp(column);
 
             if (toArray) {
-              newRow.push((0, _object.getProperty)(row, prop));
+              newRow.push(row[prop]);
             } else {
               newRow[prop] = row[prop];
             }
@@ -30324,7 +30310,7 @@ Handsontable.DefaultSettings = _defaultSettings2.default;
 Handsontable.EventManager = _eventManager2.default;
 Handsontable._getListenersCounter = _eventManager.getListenersCounter; // For MemoryLeak tests
 
-Handsontable.buildDate = "2017-12-20T23:53:13.054Z";
+Handsontable.buildDate = "2017-05-30T10:18:32.902Z";
 Handsontable.packageName = "handsontable";
 Handsontable.version = "0.32.0";
 
@@ -34886,7 +34872,7 @@ var ContextMenu = function (_BasePlugin) {
 
       var settings = this.hot.getSettings().contextMenu;
       var predefinedItems = {
-        items: this.itemsFactory.getItems(true)
+        items: this.itemsFactory.getItems(settings)
       };
       this.registerEvents();
 
@@ -44517,7 +44503,7 @@ function UndoRedo(instance) {
       return;
     }
 
-    var originalData = plugin.instance.getSourceData();
+    var originalData = plugin.instance.getSourceDataArray();
 
     index = (originalData.length + index) % originalData.length;
 
@@ -44779,15 +44765,9 @@ UndoRedo.RemoveRowAction = function (index, data) {
 (0, _object.inherit)(UndoRedo.RemoveRowAction, UndoRedo.Action);
 
 UndoRedo.RemoveRowAction.prototype.undo = function (instance, undoneCallback) {
-  instance.addHookOnce('afterRender', undoneCallback);
   instance.alter('insert_row', this.index, this.data.length, 'UndoRedo.undo');
-
-  var source = instance.getSourceData();
-  for (var i = 0; i < this.data.length; i++) {
-    source[this.index + i] = this.data[i];
-  }
-
-  instance.render();
+  instance.addHookOnce('afterRender', undoneCallback);
+  instance.populateFromArray(this.index, 0, this.data, void 0, void 0, 'UndoRedo.undo');
 };
 UndoRedo.RemoveRowAction.prototype.redo = function (instance, redoneCallback) {
   instance.addHookOnce('afterRemoveRow', redoneCallback);
