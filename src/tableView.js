@@ -550,6 +550,9 @@ function TableView(instance) {
       // Doesn't fix https://github.com/handsontable/handsontable/issues/4521
       // But we don't use that
       // Also note: This contributes to https://github.com/handsontable/handsontable/issues/4656
+      // If the 'scrollableElement' is the window, then Handsontable doesn't do its
+      // internal scrolling system (caused by overflow: hidden). Otherwise
+      // it's the 'holder' element, which is what does the internal scrolling
       if (holder !== window) {
         event.preventDefault();
       }
