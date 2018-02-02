@@ -24,7 +24,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * Version: 0.32.0
- * Date: Thu Jan 18 2018 14:38:12 GMT+1000 (AEST)
+ * Date: Fri Feb 02 2018 17:02:15 GMT+1000 (AEST)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -36255,7 +36255,7 @@ Handsontable.DefaultSettings = _defaultSettings2.default;
 Handsontable.EventManager = _eventManager2.default;
 Handsontable._getListenersCounter = _eventManager.getListenersCounter; // For MemoryLeak tests
 
-Handsontable.buildDate = "2018-01-18T04:38:12.073Z";
+Handsontable.buildDate = "2018-02-02T07:02:15.260Z";
 Handsontable.packageName = "handsontable";
 Handsontable.version = "0.32.0";
 
@@ -52278,10 +52278,19 @@ function TableView(instance) {
 
   if (!(0, _browser.isChrome)() && !(0, _browser.isSafari)()) {
     this.eventManager.addEventListener(instance.rootElement, 'wheel', function (event) {
-      event.preventDefault();
-
       var lineHeight = parseInt((0, _element.getComputedStyle)(document.body)['font-size'], 10);
       var holder = that.wt.wtOverlays.scrollableElement;
+
+      // Fixes https://github.com/handsontable/handsontable/issues/4773
+      // Doesn't fix https://github.com/handsontable/handsontable/issues/4521
+      // But we don't use that
+      // Also note: This contributes to https://github.com/handsontable/handsontable/issues/4656
+      // If the 'scrollableElement' is the window, then Handsontable doesn't do its
+      // internal scrolling system (caused by overflow: hidden). Otherwise
+      // it's the 'holder' element, which is what does the internal scrolling
+      if (holder !== window) {
+        event.preventDefault();
+      }
 
       var deltaY = event.wheelDeltaY || event.deltaY;
       var deltaX = event.wheelDeltaX || event.deltaX;
