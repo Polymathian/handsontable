@@ -543,10 +543,16 @@ function TableView(instance) {
 
   if (!isChrome() && !isSafari()) {
     this.eventManager.addEventListener(instance.rootElement, 'wheel', (event) => {
-      event.preventDefault();
-
       const lineHeight = parseInt(getComputedStyle(document.body)['font-size'], 10);
       const holder = that.wt.wtOverlays.scrollableElement;
+
+      // Fixes https://github.com/handsontable/handsontable/issues/4773
+      // Doesn't fix https://github.com/handsontable/handsontable/issues/4521
+      // But we don't use that
+      // Also note: This contributes to https://github.com/handsontable/handsontable/issues/4656
+      if (holder !== window) {
+        event.preventDefault();
+      }
 
       let deltaY = event.wheelDeltaY || event.deltaY;
       let deltaX = event.wheelDeltaX || event.deltaX;
